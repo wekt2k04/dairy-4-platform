@@ -1,0 +1,119 @@
+# Dairy 4.0 Platform – Root Git Ignore
+
+# Node / React
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.npm/
+frontend/.npm/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+.Python
+venv/
+.venv/
+ENV/
+env/
+backend/.venv/
+backend/venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets and environment files
+.env
+*.env
+.env.*
+backend/.env
+frontend/.env
+frontend/.env.*
+backend/.env.*
+firebase-adminsdk.json
+google_credentials.json
+firebase-key.json
+*-firebase-adminsdk-*.json
+*_private.json
+*_secret.json
+
+# Firebase / local auth artifacts
+.firebase/
+.firebaserc
+
+# Backend generated uploads
+backend/uploads/
+
+# Large MLOps artifacts in the model drop zone
+/backend/models/weights/*.pt
+/backend/models/weights/*.joblib
+!/backend/models/weights/.gitkeep
+
+# Logs and runtime output
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+.nyc_output/
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.eslintcache
+.stylelintcache
+
+# Build caches and temp files
+.cache/
+.parcel-cache/
+.cache-loader/
+.next/
+.nuxt/
+.output/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+out/
+tmp/
+temp/
+*.bak
+*.tmp
+*.orig
+*.temp
+
+# Database and local binaries
+*.db
+*.sqlite
+*.sqlite3
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Docker overrides
+docker-compose.override.yml
+
+# Optional generated assets
+*.generated.ts
+*.generated.js
