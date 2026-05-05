@@ -29,9 +29,21 @@ export interface UploadResponse {
   filename: string;
 }
 
+export interface VisionProcessResponse {
+  original_video_url: string;
+  processed_video_url?: string | null;
+  frames_processed: number;
+  total_detections: number;
+  behavior_counts: Record<string, number>;
+  status: string;
+  error_message?: string | null;
+}
+
 export interface DashboardState {
   inputs: HealthInput & SimulationContext;
   videoUrl?: string;
+  processedVideoUrl?: string;
+  vision?: VisionProcessResponse;
   health?: HealthPredictionResponse;
   production?: ProductionPredictionResponse;
 }

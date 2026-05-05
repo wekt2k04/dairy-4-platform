@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, CloudUpload, Radar, Send } from 'lucide-react';
 
-import { predictHealth, predictProduction, uploadVideo } from '../services/api';
-import type { DashboardState, HealthInput, SimulationContext } from '../types';
+import { predictHealth, predictProduction, processVideo, uploadVideo } from '../services/api';
+import type { DashboardState, HealthInput, SimulationContext, VisionProcessResponse } from '../types';
 
 const defaultInputs: HealthInput & SimulationContext = {
   temperature_c: 38.4,
@@ -35,9 +35,13 @@ export default function SimulatePage() {
 
     try {
       let videoUrl = '';
+      let processedVideoUrl = '';
+      let vision: VisionProcessResponse | undefined;
       if (videoFile) {
         const uploadResult = await uploadVideo(videoFile);
         videoUrl = uploadResult.video_url;
+        vision = await processVideo(videoUrl);
+        processedVideoUrl = vision.processed_video_url ?? '';
       }
 
       const health = await predictHealth({
@@ -55,6 +59,8 @@ export default function SimulatePage() {
       const dashboardState: DashboardState = {
         inputs,
         videoUrl: videoUrl || undefined,
+        processedVideoUrl: processedVideoUrl || undefined,
+        vision,
         health,
         production,
       };
@@ -90,7 +96,7 @@ export default function SimulatePage() {
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
-              YOLO/ViT overlay is simulated on the dashboard for the operator view.
+              Uploaded videos are processed with the YOLO/ViT behavior pipeline when vision models are available.
             </div>
           </div>
         </header>

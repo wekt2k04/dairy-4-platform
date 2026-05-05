@@ -4,6 +4,7 @@ import type {
   ProductionPredictionResponse,
   SimulationContext,
   UploadResponse,
+  VisionProcessResponse,
 } from '../types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
@@ -47,6 +48,16 @@ export async function uploadVideo(video: File): Promise<UploadResponse> {
   });
 
   return parseResponse<UploadResponse>(response);
+}
+
+export async function processVideo(videoUrl: string, maxFrames = 500): Promise<VisionProcessResponse> {
+  const response = await fetch(`${apiBaseUrl}/api/vision/process`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ video_url: videoUrl, max_frames: maxFrames }),
+  });
+
+  return parseResponse<VisionProcessResponse>(response);
 }
 
 export async function predictProduction(input: HealthInput & SimulationContext & { video_url?: string }): Promise<ProductionPredictionResponse> {

@@ -13,7 +13,7 @@ export default function VideoPanel({ videoUrl }: VideoPanelProps) {
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Vision Block</div>
-          <div className="mt-1 text-lg font-medium text-white">YOLO / ViT simulation stream</div>
+          <div className="mt-1 text-lg font-medium text-white">YOLO / ViT behavior stream</div>
         </div>
       </div>
 

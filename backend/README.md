@@ -134,6 +134,40 @@ curl -X POST http://localhost:8000/api/vision/upload \
 
 The uploaded video is accessible at: `http://localhost:8000/static/uploads/abc123def456-farm_clip.mp4`
 
+### 5. Vision Video Processing
+
+After uploading a video, process it with the YOLO cow detector and ViT behavior classifier:
+
+```bash
+curl -X POST http://localhost:8000/api/vision/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "video_url": "/static/uploads/abc123def456-farm_clip.mp4",
+    "max_frames": 500
+  }'
+```
+
+**Response:**
+```json
+{
+  "original_video_url": "/static/uploads/abc123def456-farm_clip.mp4",
+  "processed_video_url": "/static/uploads/processed-abc123def456-farm_clip-a1b2c3d4.mp4",
+  "frames_processed": 500,
+  "total_detections": 120,
+  "behavior_counts": {
+    "stand": 40,
+    "foraging": 60,
+    "drinking_water": 20
+  },
+  "status": "processed",
+  "error_message": null
+}
+```
+
+The processed video is an MP4 with green cow boxes and behavior labels drawn into the frames.
+
+If dependencies or model artifacts are missing, the endpoint returns `status: "unavailable"` with `error_message` instead of crashing the API.
+
 ## Model Artifact Drop-In
 
 ### Adding Trained Models
@@ -148,7 +182,14 @@ The uploaded video is accessible at: `http://localhost:8000/static/uploads/abc12
    - Type: PyTorch state_dict
    - Backend will auto-load on request if present
 
-The inference engine gracefully falls back to heuristics if models are not found.
+3. **Vision Models**:
+   - YOLO file: `/vision_model/models/yolo_cow_detector/best.pt`
+   - ViT directory: `/vision_model/models/vit_behavior_classifier/`
+   - Backend module: `/backend/models/vision_inference.py`
+   - Endpoint: `POST /api/vision/process`
+   - Output: processed MP4 URL plus frame and detection counts
+
+The health and production inference engine gracefully falls back to heuristics if models are not found. The vision endpoint returns `status: "unavailable"` if its model files or runtime dependencies are missing.
 
 See `/backend/models/weights/README.md` for detailed specifications.
 

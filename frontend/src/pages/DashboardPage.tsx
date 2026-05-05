@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const predicted = state.production.milk_yield_liters;
   const dropBanner = state.production.drop_alert;
   const gaugeStatus = state.health.health_status;
+  const dashboardVideoUrl = state.processedVideoUrl ?? state.videoUrl;
 
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
@@ -73,7 +74,7 @@ export default function DashboardPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <ProductionChart yesterday={state.inputs.milk_yesterday_liters} predicted={predicted} />
-          <VideoPanel videoUrl={state.videoUrl ? `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}${state.videoUrl}` : undefined} />
+          <VideoPanel videoUrl={dashboardVideoUrl ? `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}${dashboardVideoUrl}` : undefined} />
         </section>
 
         <section className="grid gap-6 md:grid-cols-3">
@@ -91,6 +92,11 @@ export default function DashboardPage() {
             label="Rumen pH"
             value={state.inputs.rumen_ph.toFixed(1)}
             helper="Mapped into the health RF wrapper"
+          />
+          <StatCard
+            label="Vision detections"
+            value={String(state.vision?.total_detections ?? 0)}
+            helper={state.processedVideoUrl ? `${state.vision?.frames_processed ?? 0} frames processed` : 'Processed overlay not available'}
           />
         </section>
       </div>
