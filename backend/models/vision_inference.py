@@ -9,12 +9,15 @@ import subprocess
 from uuid import uuid4
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-UPLOADS_DIR = PROJECT_ROOT / "backend" / "uploads"
-ULTRALYTICS_CONFIG_DIR = PROJECT_ROOT / "backend" / ".ultralytics"
-YOLO_MODEL_PATH = PROJECT_ROOT / "vision_model" / "models" / "yolo_cow_detector" / "best.pt"
-VIT_MODEL_DIR = PROJECT_ROOT / "vision_model" / "models" / "vit_behavior_classifier"
+# --- LES BONS CHEMINS DE LA DROP ZONE ---
+CURRENT_DIR = Path(__file__).resolve().parent
+UPLOADS_DIR = CURRENT_DIR.parent / "uploads"
+ULTRALYTICS_CONFIG_DIR = CURRENT_DIR.parent / ".ultralytics"
+WEIGHTS_DIR = CURRENT_DIR / "weights"
 
+# Les modèles DOIVENT être placés ici localement :
+YOLO_MODEL_PATH = WEIGHTS_DIR / "yolo_cow_detector" / "best.pt"
+VIT_MODEL_DIR = WEIGHTS_DIR / "vit_behavior_classifier"
 
 class VisionProcessingError(Exception):
     """Raised when a requested video cannot be processed."""

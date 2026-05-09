@@ -1,32 +1,21 @@
-# Data Science Drop-In Zone
+# Data Science Drop-In Zone - Dairy 4.0
 
-Upload final trained artifacts here. The application will load them if they are present and fall back to deterministic heuristics when they are not.
+## 1. Modèle de Diagnostic de Santé (Heuristique/RF)
+- **Fichier :** `health_model.joblib`
+- [cite_start]**Colonnes :** `temperature_c`, `heart_rate_bpm`, `rumen_ph`, `activity_score` [cite: 2]
 
-## 1. Immediate Health Diagnostic Model
+## 2. Modèle Expert de Prédiction Laitière (LSTM)
+Ce modèle remplace l'ancienne version déterministe par une architecture Bi-LSTM avec mécanisme d'attention.
 
-Place the trained artifact at `health_model.joblib`.
+- **Fichiers requis :** - `dairy4_lstm_pro_attention.pt` (Poids du réseau)
+  - `dairy_feature_scaler.joblib` (StandardScaler pour les 9 entrées)
+  - `dairy_target_scaler.joblib` (MinMaxScaler pour la sortie liters)
+- **Architecture :** Bi-LSTM 2 couches, `hidden_size=128`, 9 features d'entrée.
+- **Features (9) :** - Capteurs : Temp, HR, pH, Activité.
+  - Contexte : Days in Milk, Milk Yesterday.
+  - Ingénierie : Temp Rolling Mean, pH Rolling Mean, Temp Std Dev.
+- **Performances validées :** R² = 0.961 | F1-Score = 0.804.
 
-- Format: Scikit-learn pipeline or ensemble wrapped by `joblib`
-- Required input columns: `temperature_c`, `heart_rate_bpm`, `rumen_ph`, `activity_score`
-- Expected API outputs: `health_status`, `health_score`, `confidence_score`
-
-## 2. Milk Production Forecasting Model
-
-Place the trained artifact at `dairy4_lstm.pt`.
-
-- Format: PyTorch `state_dict`
-- Required architecture: 2-layer bidirectional LSTM, `hidden_size=128`, `input_size=18`
-- Heads: independent linear heads named `fc_reg` and `fc_cls`
-- Required wrapper input: `Float32` tensor with shape `(batch, 7, 18)`
-- Preprocessing: `StandardScaler` fit on train split only
-- Expected API outputs: `milk_yield_liters`, `drop_alert`
-
-## 3. Vision Behavioral Model
-
-The platform accepts a video upload and converts it to a URL for the inference wrapper. Pass the resolved video URL into your downstream vision pipeline.
-
-## Operational Notes
-
-- Do not add training code here.
-- Keep artifacts immutable once promoted.
-- If you replace an artifact, preserve the file name so the backend can hot-load it without code changes.
+## 3. Modèles de Vision
+- **YOLO :** `yolo_cow_detector/best.pt`
+- **ViT :** `vit_behavior_classifier/`

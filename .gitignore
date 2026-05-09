@@ -55,12 +55,14 @@ backend/.ultralytics/
 # Local notebook used for model development, not part of the app commit
 ProjectIOT_v1.ipynb
 
-# Vision model artifacts are kept locally or uploaded with Git LFS/model storage
-vision_model/models/
-vision_model/models/**/*.pt
-vision_model/models/**/*.pth
-vision_model/models/**/*.safetensors
-vision_model/models/**/*.bin
+# Large MLOps artifacts in the model drop zone
+backend/models/weights/**/*.pt
+backend/models/weights/**/*.joblib
+backend/models/weights/**/*.safetensors
+backend/models/weights/**/*.bin
+backend/models/weights/vit_behavior_classifier/
+backend/models/weights/yolo_cow_detector/
+!backend/models/weights/.gitkeep
 
 # Large MLOps artifacts in the model drop zone
 /backend/models/weights/*.pt
