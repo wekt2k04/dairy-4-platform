@@ -68,7 +68,8 @@ backend/models/weights/yolo_cow_detector/
 /backend/models/weights/*.pt
 /backend/models/weights/*.joblib
 !/backend/models/weights/.gitkeep
-
+/backend/models/weights/*.json
+/backend/models/weights/*.pkl
 # Logs and runtime output
 *.log
 logs/

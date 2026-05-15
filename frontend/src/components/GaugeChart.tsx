@@ -16,7 +16,20 @@ const statusFill: Record<HealthStatus, string> = {
   Warning: '#f9b46b',
   Critical: '#ff6b78',
 };
-
+const healthMessages: Record<HealthStatus, { title: string; description: string }> = {
+  Healthy: {
+    title: '✅ Vache en bon état',
+    description: 'Tous les paramètres sont dans les normes. Continuez la surveillance routinière.',
+  },
+  Warning: {
+    title: '⚠️ Attention requise',
+    description: 'Certains paramètres sont en dehors des limites normales. Surveillez de près et consultez un vétérinaire.',
+  },
+  Critical: {
+    title: '🚨 État critique',
+    description: 'La vache nécessite une attention immédiate. Intervention vétérinaire recommandée sans délai.',
+  },
+};
 export default function GaugeChart({ score, status }: GaugeChartProps) {
   const radius = 72;
   const stroke = 14;
@@ -56,12 +69,8 @@ export default function GaugeChart({ score, status }: GaugeChartProps) {
         </div>
 
         <div className="space-y-3 text-sm text-slate-300">
-          <p>
-            The gauge compresses the Random Forest output into a readable operating score for the barn team.
-          </p>
-          <p>
-            Higher values map to lower clinical risk. When the score drops, the badge shifts to warning or critical.
-          </p>
+          <p className="font-semibold text-white">{healthMessages[status].title}</p>
+          <p>{healthMessages[status].description}</p>
         </div>
       </div>
     </div>

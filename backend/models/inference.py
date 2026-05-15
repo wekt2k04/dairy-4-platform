@@ -66,16 +66,17 @@ class DairyInferenceEngine:
         if artifact.exists():
             try:
                 import joblib
+                import numpy as np
 
                 model = joblib.load(artifact)
                 features = [[payload.temperature_c, payload.heart_rate_bpm, payload.rumen_ph, payload.activity_score]]
                 if hasattr(model, "predict_proba"):
                     probabilities = model.predict_proba(features)[0]
-                    best_probability = max(probabilities)
-                    best_index = probabilities.index(best_probability)
+                    best_probability = float(np.max(probabilities))
+                    best_index = int(np.argmax(probabilities))
                     status = ["Healthy", "Warning", "Critical"][min(best_index, 2)]
-                    score = round(float(best_probability * 100.0), 2)
-                    confidence = round(float(best_probability), 3)
+                    score = round(best_probability * 100.0, 2)
+                    confidence = round(best_probability, 3)
                     return HealthPredictionResponse(health_status=status, health_score=score, confidence_score=confidence)
             except Exception:
                 pass
