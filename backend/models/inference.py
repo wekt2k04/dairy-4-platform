@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
+
+# CPU OPTIMIZATION: Set PyTorch thread limits before importing torch
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("MKL_NUM_THREADS", "2")
 
 from core.config import get_backend_settings
 from schemas.health import HealthInput, HealthPredictionResponse
@@ -130,6 +135,12 @@ class DairyInferenceEngine:
 
                 # 2. Chargement des poids et scalers
                 device = torch.device("cpu")
+                
+                # CPU OPTIMIZATION: Set thread limits for better CPU performance
+                torch.set_num_threads(2)
+                if hasattr(torch, 'set_num_interop_threads'):
+                    torch.set_num_interop_threads(1)
+                
                 feature_scaler = joblib.load(feature_scaler_path)
                 target_scaler = joblib.load(target_scaler_path)
 

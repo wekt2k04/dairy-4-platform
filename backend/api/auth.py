@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from typing import Literal
 from pydantic import BaseModel, Field
 
 router = APIRouter()
@@ -13,6 +14,7 @@ class LoginResponse(BaseModel):
     success: bool
     token: str
     token_type: str = "bearer"
+    auth_mode: Literal["Mock/Demo"] = "Mock/Demo"
 
 
 @router.post("/mock-login", response_model=LoginResponse)

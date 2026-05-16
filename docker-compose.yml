@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dairy-4-platform-backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      FRONTEND_ORIGIN: http://localhost:5173
+      FRONTEND_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      MODEL_WEIGHTS_DIR: /app/backend/models/weights
+    restart: unless-stopped

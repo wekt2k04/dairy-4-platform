@@ -1,10 +1,8 @@
 import type {
-  HealthInput,
-  HealthPredictionResponse,
-  ProductionPredictionResponse,
-  SimulationContext,
+  DashboardState,
+  MockLoginResponse,
+  ProductionInput,
   UploadResponse,
-  VisionProcessResponse,
 } from '../types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
@@ -25,17 +23,7 @@ export async function mockLogin(username: string, password: string) {
     body: JSON.stringify({ username, password }),
   });
 
-  return parseResponse<{ success: boolean; token: string }>(response);
-}
-
-export async function predictHealth(input: HealthInput): Promise<HealthPredictionResponse> {
-  const response = await fetch(`${apiBaseUrl}/api/predict/health`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-
-  return parseResponse<HealthPredictionResponse>(response);
+  return parseResponse<MockLoginResponse>(response);
 }
 
 export async function uploadVideo(video: File): Promise<UploadResponse> {
@@ -50,22 +38,12 @@ export async function uploadVideo(video: File): Promise<UploadResponse> {
   return parseResponse<UploadResponse>(response);
 }
 
-export async function processVideo(videoUrl: string, maxFrames = 500): Promise<VisionProcessResponse> {
-  const response = await fetch(`${apiBaseUrl}/api/vision/process`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ video_url: videoUrl, max_frames: maxFrames }),
-  });
-
-  return parseResponse<VisionProcessResponse>(response);
-}
-
-export async function predictProduction(input: HealthInput & SimulationContext & { video_url?: string }): Promise<ProductionPredictionResponse> {
-  const response = await fetch(`${apiBaseUrl}/api/predict/production`, {
+export async function runFullSimulation(input: ProductionInput): Promise<DashboardState> {
+  const response = await fetch(`${apiBaseUrl}/api/predict/full-simulation`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
 
-  return parseResponse<ProductionPredictionResponse>(response);
+  return parseResponse<DashboardState>(response);
 }

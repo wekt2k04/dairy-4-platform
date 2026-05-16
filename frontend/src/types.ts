@@ -12,6 +12,10 @@ export interface SimulationContext {
   time_of_day_hhmm: string;
 }
 
+export interface ProductionInput extends HealthInput, SimulationContext {
+  video_url?: string | null;
+}
+
 export interface HealthPredictionResponse {
   health_status: HealthStatus;
   health_score: number;
@@ -22,6 +26,13 @@ export interface ProductionPredictionResponse {
   milk_yield_liters: number;
   drop_alert: boolean;
   confidence_score?: number;
+}
+
+export interface MockLoginResponse {
+  success: boolean;
+  token: string;
+  token_type: string;
+  auth_mode: 'Mock/Demo';
 }
 
 export interface UploadResponse {
@@ -40,10 +51,12 @@ export interface VisionProcessResponse {
 }
 
 export interface DashboardState {
-  inputs: HealthInput & SimulationContext;
-  videoUrl?: string;
-  processedVideoUrl?: string;
-  vision?: VisionProcessResponse;
-  health?: HealthPredictionResponse;
-  production?: ProductionPredictionResponse;
+  prediction_id: string;
+  created_at: string;
+  source: 'api' | 'firestore';
+  inputs: ProductionInput;
+  health: HealthPredictionResponse;
+  production: ProductionPredictionResponse;
+  vision?: VisionProcessResponse | null;
+  firestore_path?: string | null;
 }

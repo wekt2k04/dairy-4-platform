@@ -1,7 +1,9 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+
+import type { DashboardState } from '../types';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -36,5 +38,25 @@ export function getFirebaseServices() {
     auth: getAuth(firebaseApp),
     firestore: getFirestore(firebaseApp),
     storage: getStorage(firebaseApp),
+  };
+}
+
+export async function getPredictionById(predictionId: string): Promise<DashboardState | null> {
+  const services = getFirebaseServices();
+  if (!services) {
+    return null;
+  }
+
+  const predictionRef = doc(services.firestore, 'predictions', predictionId);
+  const snapshot = await getDoc(predictionRef);
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  const data = snapshot.data() as Omit<DashboardState, 'prediction_id' | 'source'>;
+  return {
+    prediction_id: predictionId,
+    ...data,
+    source: 'firestore',
   };
 }

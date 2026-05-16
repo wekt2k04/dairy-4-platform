@@ -18,8 +18,7 @@ export default function LoginPage() {
 
     try {
       const result = await mockLogin(username, password);
-      localStorage.setItem('dairy4:auth', JSON.stringify({ token: result.token, user: username }));
-      navigate('/simulate');
+      navigate('/simulate', { state: { authMode: result.auth_mode } });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Login failed');
     } finally {
@@ -59,10 +58,13 @@ export default function LoginPage() {
           <div className="glass-panel rounded-[2rem] p-8 lg:p-10">
             <div className="flex items-center gap-3 text-accent">
               <ShieldCheck className="h-5 w-5" />
-              <span className="text-xs uppercase tracking-[0.24em] text-slate-300">Operator Login</span>
+              <span className="text-xs uppercase tracking-[0.24em] text-slate-300">Mock/Demo Login</span>
             </div>
             <h2 className="mt-4 text-2xl font-semibold text-white">Sign in to simulate the herd.</h2>
-            <p className="mt-2 text-sm text-slate-300">Use the hardcoded credentials <span className="font-semibold text-white">admin / admin</span>.</p>
+            <p className="mt-2 text-sm text-slate-300">
+              Use the hardcoded credentials <span className="font-semibold text-white">admin / admin</span>. This is
+              a <span className="font-semibold text-white">Mock/Demo</span> auth flow.
+            </p>
 
             <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
               <div>

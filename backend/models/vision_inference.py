@@ -8,6 +8,9 @@ import shutil
 import subprocess
 from uuid import uuid4
 
+# CPU OPTIMIZATION: Set PyTorch to use limited threads for better performance
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("MKL_NUM_THREADS", "2")
 
 # --- LES BONS CHEMINS DE LA DROP ZONE ---
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -18,6 +21,9 @@ WEIGHTS_DIR = CURRENT_DIR / "weights"
 # Les modèles DOIVENT être placés ici localement :
 YOLO_MODEL_PATH = WEIGHTS_DIR / "yolo_cow_detector" / "best.pt"
 VIT_MODEL_DIR = WEIGHTS_DIR / "vit_behavior_classifier"
+
+# CPU OPTIMIZATION: Frame skipping configuration (max 3 frames per second for 30 fps video)
+FRAME_SKIP_RATIO = 10  # Process 1 frame every N frames (30 fps / 10 = 3 fps effective)
 
 class VisionProcessingError(Exception):
     """Raised when a requested video cannot be processed."""
@@ -40,8 +46,16 @@ class CowVisionInference:
     def __init__(self) -> None:
         self._load_runtime_dependencies()
         self._validate_model_paths()
-        self.device = "cuda" if self.torch.cuda.is_available() else "cpu"
+        self.device = "cpu"  # CPU OPTIMIZATION: Force CPU to avoid CUDA initialization overhead
+        
+        # CPU OPTIMIZATION: Set thread limits for PyTorch
+        self.torch.set_num_threads(2)
+        if hasattr(self.torch, 'set_num_interop_threads'):
+            self.torch.set_num_interop_threads(1)
+        
         self.detector = self.YOLO(str(YOLO_MODEL_PATH))
+        self.detector.to(self.device)  # Ensure model is on CPU
+        
         self.vit_processor = self.AutoImageProcessor.from_pretrained(str(VIT_MODEL_DIR), use_fast=True)
         self.vit_classifier = self.AutoModelForImageClassification.from_pretrained(str(VIT_MODEL_DIR)).to(self.device)
         self.vit_classifier.eval()
@@ -142,15 +156,23 @@ class CowVisionInference:
             raise VisionProcessingError(f"Could not open video: {video_path.name}")
 
         fps = cap.get(self.cv2.CAP_PROP_FPS) or 25.0
-        width = int(cap.get(self.cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(self.cv2.CAP_PROP_FRAME_HEIGHT))
-        if width <= 0 or height <= 0:
+        original_width = int(cap.get(self.cv2.CAP_PROP_FRAME_WIDTH))
+        original_height = int(cap.get(self.cv2.CAP_PROP_FRAME_HEIGHT))
+        if original_width <= 0 or original_height <= 0:
             cap.release()
             raise VisionProcessingError(f"Could not read video dimensions: {video_path.name}")
 
+        # CPU OPTIMIZATION: Downsampling for faster processing
+        # Target resolution: 640px on longest edge
+        max_dimension = max(original_width, original_height)
+        scale_factor = 640 / max_dimension if max_dimension > 640 else 1.0
+        downsampled_width = max(320, int(original_width * scale_factor))
+        downsampled_height = max(240, int(original_height * scale_factor))
+
         output_path.parent.mkdir(parents=True, exist_ok=True)
         raw_output_path = output_path.with_name(f"{output_path.stem}-raw.mp4")
-        writer = self.cv2.VideoWriter(str(raw_output_path), self.cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
+        # Use original dimensions for output to maintain video quality appearance
+        writer = self.cv2.VideoWriter(str(raw_output_path), self.cv2.VideoWriter_fourcc(*"mp4v"), fps, (original_width, original_height))
         if not writer.isOpened():
             cap.release()
             raise VisionProcessingError(f"Could not create processed video: {raw_output_path.name}")
@@ -158,6 +180,7 @@ class CowVisionInference:
         frame_count = 0
         total_detections = 0
         behavior_counts: Counter[str] = Counter()
+        frame_index = 0
 
         try:
             while cap.isOpened() and frame_count < max_frames:
@@ -165,13 +188,35 @@ class CowVisionInference:
                 if not ok:
                     break
 
-                results = self.run_pipeline(frame)
+                # CPU OPTIMIZATION: Frame skipping - process every Nth frame
+                if frame_index % FRAME_SKIP_RATIO != 0:
+                    writer.write(frame)
+                    frame_index += 1
+                    continue
+
+                # CPU OPTIMIZATION: Downsampling - resize frame for inference
+                frame_small = self.cv2.resize(frame, (downsampled_width, downsampled_height), interpolation=self.cv2.INTER_LINEAR)
+                
+                results = self.run_pipeline(frame_small)
+                
+                # Scale bounding boxes back to original resolution for output
+                if scale_factor < 1.0:
+                    for result in results:
+                        x1, y1, x2, y2 = result["bbox"]
+                        result["bbox"] = [
+                            int(x1 / scale_factor),
+                            int(y1 / scale_factor),
+                            int(x2 / scale_factor),
+                            int(y2 / scale_factor)
+                        ]
+                
                 annotated = self.draw_results(frame, results)
                 writer.write(annotated)
 
                 total_detections += len(results)
                 behavior_counts.update(str(result["behavior"]) for result in results)
                 frame_count += 1
+                frame_index += 1
         finally:
             cap.release()
             writer.release()
