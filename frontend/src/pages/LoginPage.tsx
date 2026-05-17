@@ -1,100 +1,136 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, ShieldCheck } from 'lucide-react';
-
-import { mockLogin } from '../services/api';
+import { Languages, Sun, Moon, LogIn, Heart } from 'lucide-react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useTheme } from '../contexts/ThemeContext';
+import { useI18n } from '../contexts/I18nContext';
+import { getFirebaseApp } from '../services/firebase';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const { theme, toggleTheme } = useTheme();
+  const { lang, setLang, t } = useI18n();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError('');
 
+    const app = getFirebaseApp();
+    if (!app) {
+      setError('Firebase is not configured.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const result = await mockLogin(username, password);
-      navigate('/simulate', { state: { authMode: result.auth_mode } });
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Login failed');
+      const auth = getAuth(app);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard', { replace: true });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed';
+      if (msg.includes('auth/user-not-found') || msg.includes('auth/wrong-password') || msg.includes('auth/invalid-credential')) {
+        setError('Invalid email or password');
+      } else if (msg.includes('auth/invalid-email')) {
+        setError('Invalid email format');
+      } else if (msg.includes('auth/too-many-requests')) {
+        setError('Too many attempts. Try again later.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(141,220,255,0.14),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(119,201,139,0.12),_transparent_22%)]" />
-      <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center">
-        <section className="grid w-full gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="animate-float rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-glow backdrop-blur-xl lg:p-10">
-            <div className="label-chip w-fit">Dairy 4.0 / Precision Livestock Farming</div>
-            <h1 className="mt-6 max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-              A production cockpit for dairy health, yield, and vision telemetry.
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
-              Connect the farm’s bolus signals, video stream, and pre-trained inference models through a single
-              operator interface.
-            </p>
+    <main className="relative min-h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <button
+          onClick={() => setLang(lang === 'en' ? 'fr' : 'en')}
+          className="rounded-xl border p-2 transition hover:bg-black/5 dark:hover:bg-white/5"
+          style={{ borderColor: 'var(--border-color)' }}
+          title={t('language')}
+        >
+          <Languages className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
+        </button>
+        <button
+          onClick={toggleTheme}
+          className="rounded-xl border p-2 transition hover:bg-black/5 dark:hover:bg-white/5"
+          style={{ borderColor: 'var(--border-color)' }}
+          title={theme === 'dark' ? t('lightMode') : t('darkMode')}
+        >
+          {theme === 'dark'
+            ? <Sun className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
+            : <Moon className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
+          }
+        </button>
+      </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {[
-                ['FastAPI', 'validated model orchestration'],
-                ['Firebase', 'auth + data persistence'],
-                ['React', 'operator-grade control panel'],
-              ].map(([title, detail]) => (
-                <div key={title} className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                  <div className="text-sm font-medium text-white">{title}</div>
-                  <div className="mt-2 text-sm text-slate-300">{detail}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-4 py-12">
+        <div className="mb-4 flex items-center justify-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
+            <Heart className="h-6 w-6 text-white" />
+          </span>
+        </div>
+        <h1 className="text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
+          {t('appTitle')}
+        </h1>
+        <p className="mt-2 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Sign in to your account
+        </p>
 
-          <div className="glass-panel rounded-[2rem] p-8 lg:p-10">
-            <div className="flex items-center gap-3 text-accent">
-              <ShieldCheck className="h-5 w-5" />
-              <span className="text-xs uppercase tracking-[0.24em] text-slate-300">Mock/Demo Login</span>
-            </div>
-            <h2 className="mt-4 text-2xl font-semibold text-white">Sign in to simulate the herd.</h2>
-            <p className="mt-2 text-sm text-slate-300">
-              Use the hardcoded credentials <span className="font-semibold text-white">admin / admin</span>. This is
-              a <span className="font-semibold text-white">Mock/Demo</span> auth flow.
-            </p>
-
-            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+        <div className="mt-8 w-full">
+          <div className="rounded-3xl border p-8 backdrop-blur-xl" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-card)' }}>
+            <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <label className="mb-2 block text-sm text-slate-300" htmlFor="username">Username</label>
-                <input id="username" className="soft-input" value={username} onChange={(event) => setUsername(event.target.value)} />
+                <label className="mb-1.5 block text-sm font-medium" htmlFor="email" style={{ color: 'var(--text-secondary)' }}>Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  className="soft-input"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
               </div>
+
               <div>
-                <label className="mb-2 block text-sm text-slate-300" htmlFor="password">Password</label>
+                <label className="mb-1.5 block text-sm font-medium" htmlFor="password" style={{ color: 'var(--text-secondary)' }}>{t('loginPass')}</label>
                 <input
                   id="password"
                   type="password"
                   className="soft-input"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
+                  required
                 />
               </div>
 
-              {error ? <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
+              {error ? (
+                <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-500">
+                  {error}
+                </div>
+              ) : null}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="soft-button w-full bg-gradient-to-r from-accent to-accent2 shadow-[0_18px_40px_rgba(119,201,139,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="soft-button w-full text-white disabled:cursor-not-allowed disabled:opacity-70"
+                style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}
               >
                 <LogIn className="h-4 w-4" />
-                {loading ? 'Authenticating...' : 'Enter simulation'}
+                {loading ? 'Signing in...' : t('loginBtn')}
               </button>
             </form>
           </div>
-        </section>
+        </div>
       </div>
     </main>
   );

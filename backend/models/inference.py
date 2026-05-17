@@ -121,10 +121,10 @@ class DairyInferenceEngine:
                         self.attention = Attention(hidden_size * 2)
 
                         self.fc_reg = nn.Sequential(
-                            nn.Linear(hidden_size * 2, 64), nn.ReLU(), nn.Linear(64, 1)
+                            nn.Linear(hidden_size * 2, 64), nn.ReLU(), nn.ReLU(), nn.Linear(64, 1)
                         )
                         self.fc_cls = nn.Sequential(
-                            nn.Linear(hidden_size * 2, 64), nn.ReLU(), nn.Linear(64, 1)
+                            nn.Linear(hidden_size * 2, 64), nn.ReLU(), nn.ReLU(), nn.Linear(64, 1)
                         )
 
                     def forward(self, x):
@@ -138,8 +138,6 @@ class DairyInferenceEngine:
                 
                 # CPU OPTIMIZATION: Set thread limits for better CPU performance
                 torch.set_num_threads(2)
-                if hasattr(torch, 'set_num_interop_threads'):
-                    torch.set_num_interop_threads(1)
                 
                 feature_scaler = joblib.load(feature_scaler_path)
                 target_scaler = joblib.load(target_scaler_path)

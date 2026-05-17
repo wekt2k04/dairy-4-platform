@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
+from api.deps import get_current_user
 from models.vision_inference import VisionProcessingError, VisionProcessingUnavailable, process_uploaded_video
 from schemas.video import VisionProcessRequest, VisionProcessResponse, VideoUploadResponse
 from services.storage import store_video_upload
@@ -11,12 +12,12 @@ router = APIRouter()
 
 
 @router.post("/upload", response_model=VideoUploadResponse)
-async def upload_video(video: UploadFile = File(...)) -> VideoUploadResponse:
+async def upload_video(video: UploadFile = File(...), user: str = Depends(get_current_user)) -> VideoUploadResponse:
     return await store_video_upload(video)
 
 
 @router.post("/process", response_model=VisionProcessResponse)
-async def process_video(payload: VisionProcessRequest) -> VisionProcessResponse:
+async def process_video(payload: VisionProcessRequest, user: str = Depends(get_current_user)) -> VisionProcessResponse:
     try:
         result = await run_in_threadpool(process_uploaded_video, payload.video_url, payload.max_frames)
     except VisionProcessingUnavailable as exc:
