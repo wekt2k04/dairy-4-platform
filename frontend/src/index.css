@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #0284c7;
+  --accent2: #059669;
+  color-scheme: light;
+}
+
+.dark {
+  --bg-primary: #07111f;
+  --bg-secondary: #0d1730;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-primary: #e7eefb;
+  --text-secondary: #9fb4d1;
+  --accent: #8ddcff;
+  --accent2: #77c98b;
+  color-scheme: dark;
+}
+
+html {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(141, 220, 255, 0.25);
+}
+
+@layer components {
+  .glass-panel {
+    @apply border backdrop-blur-xl;
+    border-color: var(--border-color);
+    background: var(--bg-card);
+  }
+
+  .soft-input {
+    @apply w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2;
+    border-color: var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  .soft-input:focus {
+    border-color: var(--accent);
+    opacity: 0.8;
+  }
+
+  .soft-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-medium transition hover:-translate-y-0.5;
+  }
+
+  .label-chip {
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs uppercase tracking-[0.22em];
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+  }
+}
